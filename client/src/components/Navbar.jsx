@@ -5,8 +5,8 @@ import { useAppContext } from "../context/AppContext";
 
 const Navbar = () => {
   const [open, setOpen] = React.useState(false);
-  const { user, setUser, navigate } = useAppContext();
-  const Logout = () => {
+  const { user, setUser,  setShowUserLogin, navigate } = useAppContext();
+  const Logout = async () => {
     setUser(null);
     setOpen(false);
     navigate("/");
@@ -39,25 +39,22 @@ const Navbar = () => {
           </button>
         </div>
 {!user ?
-          (<button className="cursor-pointer px-8 py-2 bg-primary hover:bg-secondary transition text-white rounded-full">
+          (<button onClick={() => setShowUserLogin(true)} className="cursor-pointer px-8 py-2 bg-primary hover:bg-secondary transition text-white rounded-full">
             Login
           </button>)
         :
         (
-          <div className="flex items-center gap-2">
+          <div className="relative group">
             <img src={assets.profile_icon} alt="avatar" className="w-10 h-10 rounded-full" />
-            <ul className="flex flex-col gap-2" onClick={() => setOpen(false)}>
-              <li className="text-sm font-medium">
-                {user.name}
+            <ul className="hidden group-hover:block absolute top-10 right-0 bg-white shadow border border-gray-200 py-2.5 w-30 rounded-md text-sm z-40" onClick={() => setOpen(false)}>
+              <li className="p-1.5 pl-3 hover:bg-primary/10 cursor-pointer" onClick={() => navigate("/my-orders")}>
+                MyOrders
               </li>
-              <li className="text-sm text-gray-500">
-                {user.email}
+              <li className="p-1.5 pl-3 hover:bg-primary/10 cursor-pointer" onClick={Logout}>
+                Logout
               </li>
             </ul>
-            <button className="cursor-pointer px-8 py-2 bg-primary hover:bg-secondary transition text-white rounded-full" onClick={Logout}>
-              Logout
-            </button>
-          </div>
+         </div>
         )
         }
       </div>
@@ -65,17 +62,16 @@ const Navbar = () => {
       <button
         onClick={() => (open ? setOpen(false) : setOpen(true))}
         aria-label="Menu"
-        className="sm:hidden"
-      >
-        {/* Menu Icon SVG */}
+        className="sm:hidden">
         <img src={assets.menu_icon} alt="menu" className="w-6 opacity-80" />
       </button>
 
       {/* Mobile Menu */}
+      {open && (
       <div
         className={`${
           open ? "flex" : "hidden"
-        } absolute top-[60px] left-0 w-full bg-white shadow-md py-4 flex-col items-start gap-2 px-5 text-sm md:hidden`}
+        } absolute top-[60px] left-0 w-full bg-white shadow-md py-4 flex-col items-start z-40 gap-2 px-5 text-sm md:hidden`}
       >
         <NavLink to="/" onClick={() => setOpen(false)}>Home</NavLink>
         <NavLink to="/products" onClick={() => setOpen(false)}>Products</NavLink>
@@ -83,15 +79,16 @@ const Navbar = () => {
         <NavLink to="/contact" onClick={() => setOpen(false)}>Contact</NavLink>
 
         {!user ?
-          (<button className="cursor-pointer px-6 py-2 mt-2 bg-primary hover:bg-secondary transition text-white rounded-full text-sm" onClick={() => setOpen(false)}>
+          (<button onClick={()=>{setOpen(false);setShowUserLogin(true)}} className="cursor-pointer px-6 py-2 mt-2 bg-primary hover:bg-secondary transition text-white rounded-full text-sm">
             Login
           </button>)
         :
-          (<button className="cursor-pointer px-6 py-2 mt-2 bg-primary hover:bg-secondary transition text-white rounded-full text-sm" onClick={() => setOpen(false)}>
+          (<button className="cursor-pointer px-6 py-2 mt-2 bg-primary hover:bg-secondary transition text-white rounded-full text-sm" onClick={ Logout }>
             Logout
           </button>)
         }
       </div>
+      )}
     </nav>
   );
 };
