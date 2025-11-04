@@ -30,17 +30,17 @@ const ProductCard = ({product}) => {
                     </p>
                     <div onClick={(e)=>{e.stopPropagation()}} className="text-primary">
                         {!cartItems[product._id] ? (
-                            <button className="flex items-center justify-center gap-1 bg-primary/25 border border-primary md:w-[80px] w-[64px] h-[34px] rounded text-primary font-medium" onClick={() => addToCart(product._id)}>
+                            <button onClick={() => addToCart(product._id)} className="flex items-center justify-center gap-1 bg-primary/25 border border-primary md:w-[80px] w-[64px] h-[34px] rounded text-primary font-medium" >
                                <img src={assets.cart_icon} alt="cart" />
                                 Add
                             </button>
                         ) : (
                             <div className="flex items-center justify-center gap-2 md:w-20 w-16 h-[34px] bg-primary/25 rounded select-none">
-                                <button onClick={() => setCount((prev) => Math.max(prev - 1, 0))} className="cursor-pointer text-md px-2 h-full" >
+                                <button onClick={() => removeFromCart(product._id)} className="cursor-pointer text-md px-2 h-full" >
                                     -
                                 </button>
                                 <span className="w-5 text-center">{cartItems[product._id]}</span>
-                                <button onClick={() => setCount((prev) => prev + 1)} className="cursor-pointer text-md px-2 h-full" >
+                                <button onClick={() => addToCart(product._id)} className="cursor-pointer text-md px-2 h-full" >
                                     +
                                 </button>
                             </div>
