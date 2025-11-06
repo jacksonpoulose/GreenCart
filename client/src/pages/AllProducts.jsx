@@ -21,7 +21,7 @@ useEffect(() => {
 }, [searchQuery, products]);
 
   return (
-    <div className="mt-16 flex flex-col">
+    <div className="mt-16 flex flex-col items-center">
         <div className="flex flex-col items-left w-max">
 <p className="text-2xl font-medium uppercase">All Products</p>
 <div className="w-16 h-0.5 bg-primary rounded-full">
