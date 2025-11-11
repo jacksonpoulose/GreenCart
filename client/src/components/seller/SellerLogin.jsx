@@ -35,7 +35,7 @@ useEffect(() => {
                 rounded w-full p-2 mt-1 outline-primary" required/>
 
             </div>
-            <div>
+            <div className="w-full">
                 <p>Password</p>
                 <input onChange={(e)=>{setPassword(e.target.value)}} value={password} type="password" placeholder="enter password" className="border border-gray-200
                 rounded w-full p-2 mt-1 outline-primary" required />
