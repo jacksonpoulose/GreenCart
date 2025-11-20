@@ -1,10 +1,11 @@
 import express from "express"
-import { sellerLogin, sellerlogout, isSellerAuth } from "../controllers/SellerController"
+import { sellerLogin, sellerlogout, sellerIsAuth } from "../controllers/SellerController.js"
+import { authSeller } from "../middlewares/AuthSeller.js"
 
 const sellerRouter = express.Router()
 
 sellerRouter.post("/login",sellerLogin)
-sellerRouter.get("/is-auth",authSeller,isSellerAuth)
+sellerRouter.get("/is-auth",authSeller,sellerIsAuth)
 sellerRouter.get("/logout",sellerlogout)
 
 export default sellerRouter

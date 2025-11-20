@@ -6,6 +6,11 @@ import { connect } from 'mongoose';
 import connectDB from './config/db.js';
 import userRouter from './routes/UserRoutes.js';
 import sellerRouter from './routes/sellerRoutes.js';
+import connectCloudinary from './config/cloudinary.js';
+import productRouter from './routes/productRoutes.js';
+import cartRouter from './routes/cartRoute.js';
+import addressRouter from './routes/addressRoute.js';
+import orderRouter from './routes/orderRoutes.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -21,6 +26,7 @@ app.use(cors({origin:allowedOrigins, credentials:true}));
 
 //db connection
 await connectDB();
+await connectCloudinary();
 
 app.get('/', (req, res) => {
   res.send('API is working!');
@@ -28,6 +34,10 @@ app.get('/', (req, res) => {
 
 app.use('/api/user',userRouter)
 app.use('/api/seller',sellerRouter)
+app.use('/api/product',productRouter)
+app.use('/api/cart',cartRouter)
+app.use('/api/address',addressRouter)
+app.use('/api/order',orderRouter)
 
 
 

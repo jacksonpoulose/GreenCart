@@ -6,7 +6,8 @@ import { useEffect } from "react";
 
 const Navbar = () => {
   const [open, setOpen] = React.useState(false);
-  const { user, setUser,  setShowUserLogin, navigate, setSearchQuery, searchQuery, getCartCount } = useAppContext();
+  const { user, setUser,  setShowUserLogin, navigate, setSearchQuery, searchQuery, getCartCount, } = useAppContext();
+
   const Logout = async () => {
     setUser(null);
     setOpen(false);

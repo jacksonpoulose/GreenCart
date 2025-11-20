@@ -2,7 +2,7 @@ import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
-//Register User
+//Register User : /api/user/register
 
 export const register = async (req, res) => {
   try {
@@ -26,9 +26,9 @@ export const register = async (req, res) => {
     const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
 
     res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      httpOnly: true, //prevent javascript from accessing cookie
+      secure: process.env.NODE_ENV === "production", //use secure cookies in production
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict", //csrf protection
       maxAge: 24 * 60 * 60 * 1000,
     });
     return res.json({ success: true, user: { email: newUser.email, name: newUser.name } });
