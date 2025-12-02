@@ -17,7 +17,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 dotenv.config();
 
-const allowedOrigins = ["https://green-cart-fw2k.vercel.app/", "http://localhost:5173"];
+const allowedOrigins = ["https://green-cart-fw2k.vercel.app/"];
 
 //middlewares
 app.use(express.json());
