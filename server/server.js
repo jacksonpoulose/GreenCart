@@ -17,13 +17,15 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 dotenv.config();
 
+const allowedOrigins = ["https://green-cart-9vij.vercel.app", "http://localhost:5173"];
+
 //middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: allowedOrigins,
     credentials: true,
   })
 );
