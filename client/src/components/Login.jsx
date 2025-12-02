@@ -1,6 +1,6 @@
 import React from "react";
 import { useAppContext } from "../context/AppContext";
-import { set } from "mongoose";
+
 import toast from "react-hot-toast";
 
 const Login = () => {
@@ -8,27 +8,27 @@ const Login = () => {
   const [name, setName] = React.useState("");
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
-  const { setShowUserLogin, setUser,axios, navigate } = useAppContext();
+  const { setShowUserLogin, setUser, axios, navigate } = useAppContext();
 
   const onSubmitHandler = async (event) => {
-   try{
-event.preventDefault();
+    try {
+      event.preventDefault();
 
-const {data} = await axios.post(`/api/user/${state}`, {name, email, password});
-if(data.success){
-  setUser(data.user);
-  navigate('/');
-  setShowUserLogin(false);
-  toast.success(data.message);
-}else{
-  toast.error(data.message);
-}
-   }catch(error){
-    console.log(error);
-    toast.error(error.message);
-   }
+      const { data } = await axios.post(`/api/user/${state}`, { name, email, password });
+      if (data.success) {
+        setUser(data.user);
+        navigate("/");
+        setShowUserLogin(false);
+        toast.success(data.message);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message);
+    }
   };
-  
+
   return (
     <div
       onClick={() => {
@@ -36,7 +36,8 @@ if(data.success){
       }}
       className="fixed top-0 bottom-0 left-0 right-0 z-30 flex items-center text-sm text-gray-600 bg-black/50"
     >
-      <form onSubmit={onSubmitHandler}
+      <form
+        onSubmit={onSubmitHandler}
         onClick={(e) => {
           e.stopPropagation();
         }}
