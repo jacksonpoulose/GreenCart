@@ -23,7 +23,7 @@ const productSchema = new mongoose.Schema({
         required:true,
     },
     category: {
-        type: Array,
+        type: String,
         required: true,
     },
     inStock: {
@@ -33,6 +33,6 @@ const productSchema = new mongoose.Schema({
     
 }, { minimize: false, timestamps: true });
 
-const Product = mongoose.models.product ||  mongoose.model('product', productSchema);
+const Product = mongoose.models.product ||  mongoose.model('Product', productSchema);
 
 export default Product;

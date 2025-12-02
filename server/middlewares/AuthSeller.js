@@ -4,7 +4,7 @@ export const authSeller = async (req,res,next)=>{
 const {sellerToken} = req.cookies;
 
 if(!sellerToken){
-    return res.status(500).json({success:false, message:"Not Authorised"})
+    return res.json({success:false})
 }
 
 try {
@@ -12,7 +12,7 @@ try {
     if(tokenDecode.email === process.env.SELLER_EMAIL){
        next()
     }else{
-        return res.json({success:false, message:'Not authorized'})
+        return res.json({success:false})
     }
     
 }catch(error){

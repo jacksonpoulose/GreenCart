@@ -5,11 +5,18 @@ import Address from "../models/Address.js";
 export const addAddress = async (req, res) => {
     try{
 
-        const {address,userId} = req.body;
+        const {address} = req.body;
+        const userId = req.userId
+
+console.log(req.userId);
+console.log(address);
+
+console.log("INSERT DATA:", { ...address, userId });
+
         if(!address || !userId){
             return res.status(400).json({message: "All fields are required"})
         }
-        await Address.create({...address, userId});
+        const result = await Address.create({...address, userId});
         res.status(201).json({success: true, message: "Address added successfully"})
     }catch(error){
         res.status(500).json({message: "Server Error"})
@@ -20,8 +27,9 @@ export const addAddress = async (req, res) => {
 
 export const getAddresses = async (req, res) => {
     try{
-           const {userId} = req.params;
-        if(!userId){
+           const userId = req.userId;
+
+           if(!userId){
             return res.status(400).json({message: "User detail is required"})
         }
         const addresses = await Address.find({userId});

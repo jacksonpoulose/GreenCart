@@ -14,8 +14,6 @@ const onSubmitHandler = async (e) => {
         e.preventDefault();
 
         const {data} = await axios.post('/api/seller/login', {email, password});
-
-        console.log(data);
         if(data.success){
             setIsSeller(true);
             navigate ('/seller');

@@ -8,11 +8,11 @@ export const register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
     if (!name || !email || !password) {
-      return res.status(400).json({ message: "All fields are required" });
+      return res.json({ message: "All fields are required" });
     }
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
+      return res.json({ message: "User already exists" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -26,11 +26,12 @@ export const register = async (req, res) => {
     const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
 
     res.cookie("token", token, {
-      httpOnly: true, //prevent javascript from accessing cookie
-      secure: process.env.NODE_ENV === "production", //use secure cookies in production
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict", //csrf protection
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
       maxAge: 24 * 60 * 60 * 1000,
     });
+    
     return res.json({ success: true, user: { email: newUser.email, name: newUser.name } });
   } catch (error) {
     console.log(error.message);
@@ -45,19 +46,19 @@ export const login = async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(500).json({ success: false, message: "email and password required" });
+      return res.json({ success: false, message: "email and password required" });
     }
 
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(500).json({ success: false, message: "Invalid email or password" });
+      return res.json({ success: false, message: "Invalid email or password" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
-      return res.status(500).json({ success: false, message: "Invalid email or password" });
+      return res.json({ success: false, message: "Invalid email or password" });
     }
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
@@ -65,9 +66,12 @@ export const login = async (req, res) => {
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
       maxAge: 24 * 60 * 60 * 1000,
     });
+    
+
+    console.log(req.cookies);
     return res.json({ success: true, user: { email: user.email, name: user.name } });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -78,10 +82,9 @@ export const login = async (req, res) => {
 
 export const isAuth = async (req, res) => {
   try {
-    const { userId } = req.body;
-    console.log(userId)
+    const  userId = req.userId; 
     const user = await User.findById( userId ).select("-password");
-console.log(user)
+
     return res.json({ success: true, user });
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });

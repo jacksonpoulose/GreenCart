@@ -16,7 +16,7 @@ const userSchema = new mongoose.Schema({
         required: true,
     },
     cartItems:{
-        type: Array,
+        type: Object,
         default: {},
     },
     role: {

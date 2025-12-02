@@ -3,42 +3,69 @@ import { useNavigate } from "react-router-dom";
 import { dummyProducts } from "../assets/assets";
 import { toast } from "react-hot-toast";
 import axios from "axios";
-import { set } from "mongoose";
+
 
 axios.defaults.withCredentials = true;
 axios.defaults.baseURL = import.meta.env.VITE_BACKEND_URL;
-
 
 export const AppContext = createContext();
 
 export const AppContextProvider = ({ children }) => {
   const currency = import.meta.env.VITE_CURRENCY;
   const navigate = useNavigate();
-  const [user, setUser] = useState(false);
+  const [user, setUser] = useState(null);
   const [isSeller, setIsSeller] = useState(false);
   const [showUserLogin, setShowUserLogin] = useState(false);
   const [products, setProducts] = useState([]);
-
-  const [cartItems, setCartItems] = useState([]);
+  const [cartItems, setCartItems] = useState({});
   const [searchQuery, setSearchQuery] = useState([]);
 
   //fetch seller status
-  const fetchSeller = async ()=>{
-    try{
-      const {data} = await axios.get('/api/seller/is-auth');
-      if(data.success){
+  const fetchSeller = async () => {
+    try {
+      const { data } = await axios.get("/api/seller/is-auth");
+      if (data.success) {
         setIsSeller(true);
-    }else{
+      } else {
+        setIsSeller(false);
+      }
+    } catch (error) {
+      console.log(error);
       setIsSeller(false);
     }
-  }catch(error){
-    console.log(error);
-    setIsSeller(false);
-  }
-  }
+  };
+
+  //fetch user status , update cart items
+
+  const fetchUser = async () => {
+    try {
+      const { data } = await axios.get("/api/user/is-auth", { withCredentials: true });
+
+      if (data.success) {
+        setUser(data.user);  
+        setCartItems(data.user.cartItems || {});
+           
+      }
+    } catch (error) {
+      console.log(error);
+      setUser(null);
+      toast.error(error.message);
+    }
+  };
+
   //fetch products from backend
   const fetchProducts = async () => {
-    setProducts(dummyProducts);
+    try {
+      const { data } = await axios.get("/api/product/list");
+      if (data.success) {
+        setProducts(data.products);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("Could not fetch products");
+    }
   };
 
   //add to cart function
@@ -74,28 +101,48 @@ export const AppContextProvider = ({ children }) => {
     toast.success("Item removed from cart");
   };
 
-// get cart item count
+  // get cart item count
 
-const getCartCount = ()=>{
-  let count = 0;
-  for(const key in cartItems){
-    count += cartItems[key];
-  }
-  return count;
-}
-
-const getCartAmount = ()=>{
-  let totalAmount = 0;
-  for (const itemId in cartItems){
-    const product = products.find((item)=> item._id === itemId);
-    if (product){
-      totalAmount += cartItems[itemId] * product.offerPrice;
+  const getCartCount = () => {
+    let count = 0;
+    for (const key in cartItems) {
+      count += cartItems[key];
     }
-  }
-  return totalAmount;
-}
+    return count;
+  };
+
+  const getCartAmount = () => {
+    let totalAmount = 0;
+    for (const itemId in cartItems) {
+      const product = products.find((item) => item._id === itemId);
+      if (product) {
+        totalAmount += cartItems[itemId] * product.offerPrice;
+      }
+    }
+    return totalAmount;
+  };
+
+ 
 
   useEffect(() => {
+    const updateCart = async () => {
+      try {
+        const { data } = await axios.post("/api/cart/update", { cartItems });
+        if (!data.success) {
+          toast.error(data.message);
+        }
+      } catch (error) {
+        toast.error(error.message);
+      }
+    };
+
+    if (user) {
+      updateCart();
+    }
+  }, [cartItems]);
+
+  useEffect(() => {
+    fetchUser();
     fetchSeller();
     fetchProducts();
   }, []);
@@ -120,9 +167,9 @@ const getCartAmount = ()=>{
     setSearchQuery,
     getCartCount,
     getCartAmount,
-    axios
-
-
+    axios,
+    fetchProducts,
+    
   };
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
