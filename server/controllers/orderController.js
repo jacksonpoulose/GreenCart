@@ -14,10 +14,22 @@ export const placeOrderCOD = async (req, res) => {
     }
 
     //calculate amount
-    let amount = await items.reduce(async (acc, item) => {
-      const product = await Product.findById(item.product);
-      return (await acc) + product.price * item.quantity;
-    }, 0);
+    // let amount = await items.reduce(async (acc, item) => {
+    //   const product = await Product.findById(item.product);
+    //   return (await acc) + product.price * item.quantity;
+    // }, 0);
+
+
+       let amount = 0;
+    for (let item of items) {
+        const product = await Product.findById(item.product);
+        productData.push({name:product.name,
+            price:product.offerPrice,
+            quantity:item.quantity,
+        })
+        
+        amount += product.price * item.quantity;
+    }
 
     // add tax 2%
     amount = Math.floor(amount + amount * 0.02);
