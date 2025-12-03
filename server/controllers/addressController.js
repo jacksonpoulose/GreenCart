@@ -8,18 +8,13 @@ export const addAddress = async (req, res) => {
         const {address} = req.body;
         const userId = req.userId
 
-console.log(req.userId);
-console.log(address);
-
-console.log("INSERT DATA:", { ...address, userId });
-
         if(!address || !userId){
             return res.status(400).json({message: "All fields are required"})
         }
         const result = await Address.create({...address, userId});
-        res.status(201).json({success: true, message: "Address added successfully"})
+        res.json({success: true, message: "Address added successfully"})
     }catch(error){
-        res.status(500).json({message: "Server Error"})
+        res.json({message: "Server Error"})
     }
 }
 
@@ -30,11 +25,11 @@ export const getAddresses = async (req, res) => {
            const userId = req.userId;
 
            if(!userId){
-            return res.status(400).json({message: "User detail is required"})
+            return res.json({message: "User detail is required"})
         }
         const addresses = await Address.find({userId});
-        res.status(200).json({success: true, addresses})
+        res.json({success: true, addresses})
     }catch(error){
-        res.status(500).json({message: "Server Error"})
+        res.json({message: "Server Error"})
     }   
 }
