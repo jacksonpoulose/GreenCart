@@ -10,7 +10,7 @@ export const placeOrderCOD = async (req, res) => {
   try {
     const { userId, items, address } = req.body;
     if (!userId || !items || !address) {
-      return res.status(400).json({ message: "All fields are required" });
+      return res.json({ message: "All fields are required" });
     }
 
     //calculate amount
@@ -35,9 +35,9 @@ export const placeOrderCOD = async (req, res) => {
     amount = Math.floor(amount + amount * 0.02);
 
     await Order.create({ userId, items, amount, address, paymentType: "COD" });
-    res.status(201).json({ success: true, message: "Order placed successfully" });
+    res.json({ success: true, message: "Order placed successfully" });
   } catch (error) {
-    res.status(500).json({ message: "Server Error" });
+    res.json({ message: "Server Error" });
   }
 };
 
@@ -48,7 +48,7 @@ export const placeOrderStripe = async (req, res) => {
     const { userId, items, address } = req.body;
     const { origin } = req.headers;
     if (!userId || !items || !address) {
-      return res.status(400).json({ message: "invalid data" });
+      return res.json({ message: "invalid data" });
     }
 
     let productData = [];
@@ -108,9 +108,9 @@ export const placeOrderStripe = async (req, res) => {
       },
     });
 
-    return res.status(201).json({ success: true, url: session.url });
+    return res.json({ success: true, url: session.url });
   } catch (error) {
-    res.status(500).json({ message: "Server Error" });
+    res.json({ message: "Server Error" });
   }
 };
 
@@ -131,7 +131,7 @@ try {
         process.env.STRIPE_WEBHOOK_SECRET
     )
 }catch(error){
-res.status(400).send({message:`Webhook Error:${error.message}`});
+res.send({message:`Webhook Error:${error.message}`});
 }
 
 //handle the event
@@ -214,8 +214,8 @@ export const getAllOrders = async (req, res) => {
     })
       .populate("items.product")
       .sort({ createdAt: -1 });
-    res.status(200).json({ success: true, orders });
+    res.json({ success: true, orders });
   } catch (error) {
-    res.status(500).json({ message: "Server Error" });
+    res.json({ message: "Server Error" });
   }
 };
