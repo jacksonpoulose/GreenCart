@@ -139,7 +139,7 @@ export const AppContextProvider = ({ children }) => {
     if (user) {
       updateCart();
     }
-  }, [cartItems]);
+  }, []);
 
   useEffect(() => {
     fetchUser();

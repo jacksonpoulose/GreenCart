@@ -9,9 +9,14 @@ import User from "../models/User.js";
 export const placeOrderCOD = async (req, res) => {
   try {
     const { userId, items, address } = req.body;
-    if (!userId || !items || !address) {
-      return res.json({ message: "All fields are required" });
+    // if (!userId || !items || !address) {
+    //   return res.json({ message: "All fields are required" });
+    // }
+
+    if (!userId || !items || !Array.isArray(items) || items.length === 0 || !address) {
+      return res.json({ message: "All fields are required, items cannot be empty" });
     }
+    
 
     //calculate amount
     // let amount = await items.reduce(async (acc, item) => {
@@ -19,22 +24,26 @@ export const placeOrderCOD = async (req, res) => {
     //   return (await acc) + product.price * item.quantity;
     // }, 0);
 
-
-       let amount = 0;
+    let amount = 0;
+    let productData = [];
     for (let item of items) {
-        const product = await Product.findById(item.product);
-        productData.push({name:product.name,
-            price:product.offerPrice,
-            quantity:item.quantity,
-        })
-        
-        amount += product.price * item.quantity;
+      const product = await Product.findById(item.product);
+      if (!product) {
+        return res.json({ message: "Invalid product in order" });
+      }
+
+      productData.push({ name: product.name, price: product.offerPrice, quantity: item.quantity });
+
+      const unitPrice = product.offerPrice ?? product.price;
+
+      amount += unitPrice * item.quantity;
     }
 
     // add tax 2%
-    amount = Math.floor(amount + amount * 0.02);
+    amount = Math.round(amount + amount * 0.02);
 
-    await Order.create({ userId, items, amount, address, paymentType: "COD" });
+    await Order.create({ userId, items, amount, address,productData, paymentType: "COD" });
+    await User.findByIdAndUpdate(userId, { cartItems: {} });
     res.json({ success: true, message: "Order placed successfully" });
   } catch (error) {
     res.json({ message: "Server Error" });
@@ -64,13 +73,10 @@ export const placeOrderStripe = async (req, res) => {
 
     let amount = 0;
     for (let item of items) {
-        const product = await Product.findById(item.product);
-        productData.push({name:product.name,
-            price:product.offerPrice,
-            quantity:item.quantity,
-        })
-        
-        amount += product.price * item.quantity;
+      const product = await Product.findById(item.product);
+      productData.push({ name: product.name, price: product.offerPrice, quantity: item.quantity });
+
+      amount += product.price * item.quantity;
     }
 
     // add tax 2%
@@ -87,14 +93,11 @@ export const placeOrderStripe = async (req, res) => {
         product_data: {
           name: item.name,
         },
-        
-        unit_amount: Math.round(Number(item.price) * 1.02 * 100),
 
+        unit_amount: Math.round(Number(item.price) * 1.02 * 100),
       },
       quantity: item.quantity,
     }));
-   
-    
 
     //create session
     const session = await stripeInstance.checkout.sessions.create({
@@ -114,76 +117,73 @@ export const placeOrderStripe = async (req, res) => {
   }
 };
 
-
-//stripe webhooks 
+//stripe webhooks
 export const stripeWebhooks = async (req, res) => {
-//stripe gateway initialize
-const stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY);
+  //stripe gateway initialize
+  const stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-const sig = req.headers['stripe-signature'];
-let event;
+  const sig = req.headers["stripe-signature"];
+  let event;
 
-try {
-
+  try {
     event = stripeInstance.webhooks.constructEvent(
-        req.body,
-        sig,
-        process.env.STRIPE_WEBHOOK_SECRET
-    )
-}catch(error){
-res.send({message:`Webhook Error:${error.message}`});
-}
+      req.body,
+      sig,
+      process.env.STRIPE_WEBHOOK_SECRET
+    );
+  } catch (error) {
+    res.send({ message: `Webhook Error:${error.message}` });
+  }
 
-//handle the event
+  //handle the event
 
-switch(event.type){
-    case "payment_intent.succeeded":{
-        const paymentIntent = event.data.object;
-        const paymentIntentId = paymentIntent.id;
+  switch (event.type) {
+    case "payment_intent.succeeded": {
+      const paymentIntent = event.data.object;
+      const paymentIntentId = paymentIntent.id;
 
-        //getting session metadata
-        const session = await stripeInstance.checkout.sessions.list({
-            payment_intent:paymentIntentId,
-        });
-        const {orderId,userId} = session.data[0].metadata;
+      //getting session metadata
+      const session = await stripeInstance.checkout.sessions.list({
+        payment_intent: paymentIntentId,
+      });
+      const { orderId, userId } = session.data[0].metadata;
 
-        //mark payment as paid
+      //mark payment as paid
 
-        await Order.findByIdAndUpdate(orderId,{
-            isPaid:true,
-            paidAt:Date.now(),
-        });
-        //clear cart
+      await Order.findByIdAndUpdate(orderId, {
+        isPaid: true,
+        paidAt: Date.now(),
+      });
+      //clear cart
 
-        await User.findByIdAndUpdate(userId,{cartItems:{}});
-        break;
+      await User.findByIdAndUpdate(userId, { cartItems: {} });
+      console.log("CartItems",cartItems)
+      console.log("Cleared cart for user:", userId);
+      break;
     }
 
-    case "payment_intent.payment_failed":{
-        const paymentIntent = event.data.object;
-        const paymentIntentId = paymentIntent.id;
+    case "payment_intent.payment_failed": {
+      const paymentIntent = event.data.object;
+      const paymentIntentId = paymentIntent.id;
 
-        //getting session metadata
-        const session = await stripeInstance.checkout.sessions.list({
-            payment_intent:paymentIntentId,
-        });
-        const {orderId} = session.data[0].metadata;
+      //getting session metadata
+      const session = await stripeInstance.checkout.sessions.list({
+        payment_intent: paymentIntentId,
+      });
+      const { orderId } = session.data[0].metadata;
 
-        //delete order
+      //delete order
 
-        await Order.findByIdAndDelete(orderId);
-        break;
+      await Order.findByIdAndDelete(orderId);
+      break;
     }
-
 
     default:
-        console.log(`Unhandled event type ${event.type}`);
-        break
-}
-res.json({received:true});
-
-}
-
+      console.log(`Unhandled event type ${event.type}`);
+      break;
+  }
+  res.json({ received: true });
+};
 
 //get orders by userId /api/orders/user
 
