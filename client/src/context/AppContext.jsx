@@ -42,9 +42,9 @@ export const AppContextProvider = ({ children }) => {
       const { data } = await axios.get("/api/user/is-auth", { withCredentials: true });
 
       if (data.success) {
-        setUser(data.user);  
+        setUser(data.user);
         setCartItems(data.user.cartItems || {});
-           
+
       }
     } catch (error) {
       console.log(error);
@@ -122,7 +122,7 @@ export const AppContextProvider = ({ children }) => {
     return totalAmount;
   };
 
- 
+
 
   useEffect(() => {
     const updateCart = async () => {
@@ -139,7 +139,7 @@ export const AppContextProvider = ({ children }) => {
     if (user) {
       updateCart();
     }
-  }, []);
+  }, [cartItems]);
 
   useEffect(() => {
     fetchUser();
@@ -169,7 +169,7 @@ export const AppContextProvider = ({ children }) => {
     getCartAmount,
     axios,
     fetchProducts,
-    
+
   };
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
